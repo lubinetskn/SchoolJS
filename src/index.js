@@ -1,89 +1,145 @@
-/* ДЗ 1 - Функции */
+/* ДЗ 3 - работа с исключениями и отладчиком */
 
 /*
  Задание 1:
- 1.1: Добавьте к функции параметр с любым именем
- 1.2: Функция должна возвращать аргумент, переданный ей в качестве параметра
+ 1.1: Функция принимает массив и фильтрующую фукнцию и должна вернуть true или false
+ Функция должна вернуть true только если fn вернула true для всех элементов массива
+ 1.2: Необходимо выбрасывать исключение в случаях:
+   - array не массив или пустой массив (с текстом "empty array")
+   - fn не является функцией (с текстом "fn is not a function")
+ Зарпещено использовать встроенные методы для работы с массивами
  Пример:
-   returnFirstArgument(10) вернет 10
-   returnFirstArgument('привет') вернет `привет`
- Другими словами: функция должна возвращать в неизменном виде то, что поступает ей на вход
+   isAllTrue([1, 2, 3, 4, 5], n => n < 10) // вернет true
+   isAllTrue([100, 2, 3, 4, 5], n => n < 10) // вернет false
  */
-function returnFirstArgument(arg) {
-    return arg;
+function isAllTrue(array, fn) {
+    if (!Array.isArray(array) || array.length === 0) {
+        throw Error('empty array');
+    }
+
+    if (typeof fn !== 'function') {
+        throw Error('fn is not a function');
+    }
+
+    for (let i = 0; i < array.length; i++) {
+        if (!fn(array[i])) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /*
  Задание 2:
- 2.1: Функция должна возвращать сумму переданных аргументов
+ 2.1: Функция принимает массив и фильтрующую фукнцию и должна вернуть true или false
+ Функция должна вернуть true если fn вернула true хотя бы для одного из элементов массива
+ 2.2: Необходимо выбрасывать исключение в случаях:
+   - array не массив или пустой массив (с текстом "empty array")
+   - fn не является функцией (с текстом "fn is not a function")
+ Зарпещено использовать встроенные методы для работы с массивами
  Пример:
-   sumWithDefaults(10, 20) вернет 30
-   sumWithDefaults(2, 4) вернет 6
- 2.1 *: Значение по умолчанию для второго аргумента должно быть равно 100
- Пример:
-   sumWithDefaults(10) вернет 110
+   isSomeTrue([1, 2, 30, 4, 5], n => n > 20) // вернет true
+   isSomeTrue([1, 2, 3, 4, 5], n => n > 20) // вернет false
  */
-function sumWithDefaults(a, b = 100) {
-    return a + b;
+function isSomeTrue(array, fn) {
+    if (!Array.isArray(array) || array.length === 0) {
+        throw Error('empty array');
+    }
+
+    if (typeof fn !== 'function') {
+        throw Error('fn is not a function');
+    }
+
+    for (let i = 0; i < array.length; i++) {
+        if (fn(array[i])) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 /*
  Задание 3:
- Функция должна принимать другую функцию и возвращать результат вызова этой функции
- Пример:
-   returnFnResult(() => 'привет') вернет 'привет'
+ 3.1: Функция принимает заранее неизветсное количество аргументов, первым из которых является функция fn
+ Функция должна поочередно запустить fn для каждого переданного аргумента (кроме самой fn)
+ 3.2: Функция должна вернуть массив аргументов, для которых fn выбросила исключение
+ 3.3: Необходимо выбрасывать исключение в случаях:
+   - fn не является функцией (с текстом "fn is not a function")
  */
-function returnFnResult(fn) {
-    return fn();
+function returnBadArguments(fn, ...args) {
+    if (typeof fn !== 'function') {
+        throw Error('fn is not a function');
+    }
+
+    let result = [];
+
+    args.forEach(function(item) {
+        try {
+            fn(item);
+        } catch (e) {
+            result.push(item)
+        }
+    });
+
+    return result;
 }
 
 /*
  Задание 4:
- Функция должна принимать число и возвращать новую функцию (F)
- При вызове функции F, переданное ранее число должно быть увеличено на единицу и возвращено из F
- Пример:
-   var f = returnCounter(10);
-   console.log(f()); // выведет 11
-   console.log(f()); // выведет 12
-   console.log(f()); // выведет 13
+ 4.1: Функция имеет параметр number (по умолчанию - 0)
+ 4.2: Функция должна вернуть объект, у которого должно быть несколько методов:
+   - sum - складывает number с переданными аргументами
+   - dif - вычитает из number переданные аргументы
+   - div - делит number на первый аргумент. Результат делится на следующий аргумент (если передан) и так далее
+   - mul - умножает number на первый аргумент. Результат умножается на следующий аргумент (если передан) и так далее
+ Количество передаваемых в методы аргументов заранее неизвестно
+ 4.3: Необходимо выбрасывать исключение в случаях:
+   - number не является числом (с текстом "number is not a number")
+   - какой-либо из аргументов div является нулем (с текстом "division by 0")
  */
-function returnCounter(number = 0) {
-    return () => ++number;
+function calculator(number = 0) {
+    if (typeof number !== 'number') {
+        throw Error('number is not a number');
+    }
+
+    return {
+        sum: (...args) => {
+            return number + args.reduce((accumulator, value) => {
+                return accumulator + value;
+            });
+        },
+        dif: (...args) => {
+            return number - args.reduce((accumulator, value) => {
+                return accumulator + value;
+            });
+        },
+        div: (...args) => {
+            args.forEach((item) => {
+                if (item === 0) {
+                    throw Error('division by 0');
+                }
+                number /= item;
+            });
+
+            return number;
+        },
+        mul: (...args) => {
+            args.forEach((item) => {
+                number *= item;
+            });
+
+            return number;
+        }
+    }
 }
 
-/*
- Задание 5 *:
- Функция должна возвращать все переданные ей аргументы в виде массива
- Количество переданных аргументов заранее неизвестно
- Пример:
-   returnArgumentsArray(1, 2, 3) вернет [1, 2, 3]
- */
-function returnArgumentsArray() {
-    return [...arguments]
-}
-
-/*
- Задание 6 *:
- Функция должна принимать другую функцию (F) и некоторое количество дополнительных аргументов
- Функция должна привязать переданные аргументы к функции F и вернуть получившуюся функцию
- Пример:
-   function sum(a, b) {
-     return a + b;
-   }
-   var newSum = bindFunction(sum, 2, 4);
-   console.log(newSum()) выведет 6
- */
-function bindFunction(fn, ...args) {
-    return () => {
-        return fn.apply(null, args);
-    };
-}
+/* При решении задач, пострайтесь использовать отладчик */
 
 export {
-    returnFirstArgument,
-    sumWithDefaults,
-    returnArgumentsArray,
-    returnFnResult,
-    returnCounter,
-    bindFunction
-}
+    isAllTrue,
+    isSomeTrue,
+    returnBadArguments,
+    calculator
+};
